@@ -1,3 +1,4 @@
+DECIMAL
 WORDLIST CONSTANT EDITOR-WL
 : EDITOR  GET-ORDER NIP EDITOR-WL SWAP SET-ORDER ;
 ALSO EDITOR DEFINITIONS
@@ -11,7 +12,7 @@ CREATE 'INS 64 ALLOT  VARIABLE #INS
 : HUH ( a n)  TYPE  [CHAR] ? EMIT  ABORT ;
 : CHOOSE ( ? x1 x2 - x1|x2)  ROT IF SWAP THEN NIP ;
 
-[UNDEFINED] TIB [UNDEFINED] #TIB OR [IF]
+BL WORD TIB FIND NIP 0=  BL WORD #TIB FIND NIP 0=  OR [IF]
 : TIB ( a)  SOURCE DROP ;  : #TIB@ ( n)  SOURCE NIP ;
 [ELSE]
 DUP 0= ?END  : #TIB@ ( - a)  #TIB @ ;
@@ -21,17 +22,16 @@ DUP 0= ?END  : #TIB@ ( - a)  #TIB @ ;
 : B  -1 SCR +! ;
 : L  PAGE  SCR @ LIST ;
 
-: LIN ( - n)  CHR @ 6 RSHIFT  15 MIN ;
-: ^LIN ( - n)  LIN 6 LSHIFT ;
-: LIN^ ( - n)  LIN 1+ 6 LSHIFT ;
-: PRI? ( c - ?)  32 127 WITHIN ;
-: SCR+ ( n - c)  SCR @ BLOCK + ;
-: LINE ( n - a)  6 LSHIFT SCR+ ;
-: PRI ( n1 n2)  ?DO I SCR+ @ DUP PRI? SWAP BL CHOOSE LOOP ;
-: TYP  CR  ^LIN CHR @ PRI  [CHAR] ^ EMIT  CHR @ LIN^ PRI
-       SPACE LIN . ;
-: T ( n)  6 LSHIFT  CHR !  TYP ;
-: TRAIL ( - a n)  CHR @ SCR+  LIN^ CHR @ - ;
+: LINE ( n - a)  6 LSHIFT  SCR @ BLOCK + ;
+: #LIN ( - n)  CHR @ 6 RSHIFT  15 MIN ;
+: 'LIN ( - a)  #LIN LINE ;
+: 'CHR ( - a)  CHR @  SCR @ BLOCK + ;
+: PRI' ( c)  DUP 32 127 WITHIN IF EMIT ELSE DROP SPACE THEN ;
+: PRI ( a1 a2)  ?DO I C@ PRI' LOOP ;
+: TYPE-LINE  CR  'LIN 'CHR PRI  [CHAR] ^ EMIT
+             'CHR 'LIN 64 + PRI  SPACE #LIN . ;
+: T ( n)  DUP  6 LSHIFT  CHR !  TYPE-LINE ;
+: TRAIL ( - a n)  'CHR  'LIN 64 + 'CHR - ;
 : -FOUND  'FND #FND @ HUH ;
 : FND ( a n)  TRAIL 2SWAP SEARCH NIP
               IF 0 SCR+ - CHR !  ELSE -FOUND THEN ; ( FIXME -- start of string is wrong, should be end)
@@ -49,4 +49,4 @@ DUP 0= ?END  : #TIB@ ( - a)  #TIB @ ;
 : R  E I ;
 : P  ^LIN DUP CHR !  SCR+ 64 BLANK  UPDATE  I' ;
 
-PREVIOUS DEFINITIONS
+PREVIOUS  FORTH-WORDLIST SET-CURRENT
