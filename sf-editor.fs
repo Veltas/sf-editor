@@ -33,9 +33,9 @@ DUP 0= ?END  : #TIB@ ( - a)  #TIB @ ;
 : T ( n)  DUP  6 LSHIFT  CHR !  TYPE-LINE ;
 : TRAIL ( - a n)  'CHR  'LIN 64 + 'CHR - ;
 : -FOUND  'FND #FND @ HUH ;
-: FND ( a n)  TRAIL 2SWAP SEARCH NIP
-              IF 0 SCR+ - CHR !  ELSE -FOUND THEN ; ( FIXME -- start of string is wrong, should be end)
-: BLANK ( a n)  0 ?DO BL DUP I + C! LOOP 2DROP ;
+: FND ( a n)  TUCK TRAIL 2SWAP SEARCH NIP
+              IF SCR @ BLOCK - + CHR !  ELSE -FOUND THEN ;
+: BLANK ( a n)  0 ?DO BL DUP C! 1+ LOOP DROP ;
 : END  #TIB@ >IN ! ;
 : END? ( - ?)  #TIB@ >IN @ = ;
 : >>> ( - a n ?)  TIB >IN @ +  #TIB@ >IN @ -  END? 0=  END ;
