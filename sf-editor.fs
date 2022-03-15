@@ -1,7 +1,7 @@
 DECIMAL
 WORDLIST CONSTANT EDITOR-WL
 : EDITOR  GET-ORDER NIP EDITOR-WL SWAP SET-ORDER ;
-ALSO EDITOR DEFINITIONS
+GET-CURRENT  ALSO EDITOR DEFINITIONS  ( old-current-wl)
 : FORTH  FORTH ;
 
 VARIABLE CHR
@@ -15,7 +15,7 @@ CREATE 'INS 64 ALLOT  VARIABLE #INS
 BL WORD TIB FIND NIP 0=  BL WORD #TIB FIND NIP 0=  OR [IF]
 : TIB ( a)  SOURCE DROP ;  : #TIB@ ( n)  SOURCE NIP ;
 [ELSE]
-DUP 0= ?END  : #TIB@ ( - a)  #TIB @ ;
+: #TIB@ ( - a)  #TIB @ ;
 [THEN]
 
 : N  1 SCR +! ;
@@ -27,14 +27,14 @@ DUP 0= ?END  : #TIB@ ( - a)  #TIB @ ;
 : 'LIN ( - a)  #LIN LINE ;
 : 'CHR ( - a)  CHR @  SCR @ BLOCK + ;
 : PRI' ( c)  DUP 32 127 WITHIN IF EMIT ELSE DROP SPACE THEN ;
-: PRI ( a1 a2)  ?DO I C@ PRI' LOOP ;
+: PRI ( a1 a2)  SWAP ?DO I C@ PRI' LOOP ;
 : TYPE-LINE  CR  'LIN 'CHR PRI  [CHAR] ^ EMIT
              'CHR 'LIN 64 + PRI  SPACE #LIN . ;
-: T ( n)  DUP  6 LSHIFT  CHR !  TYPE-LINE ;
 : TRAIL ( - a n)  'CHR  'LIN 64 + 'CHR - ;
 : -FOUND  'FND #FND @ HUH ;
 : FND ( a n)  TUCK TRAIL 2SWAP SEARCH NIP
-              IF SCR @ BLOCK - + CHR !  ELSE -FOUND THEN ;
+              IF 0 LINE - + CHR !  ELSE -FOUND THEN ;
+: INS    ( TODO ) ;
 : BLANK ( a n)  0 ?DO BL DUP C! 1+ LOOP DROP ;
 : END  #TIB@ >IN ! ;
 : END? ( - ?)  #TIB@ >IN @ = ;
@@ -43,10 +43,13 @@ DUP 0= ?END  : #TIB@ ( - a)  #TIB @ ;
 : >INS'  >>> IF DUP #INS ! 'INS SWAP MOVE ELSE 2DROP THEN ;
 : >FND ( - a n)  >FND'  'FND #FND @  CR ;
 : >INS ( - a n)  >INS'  'INS #INS @  CR ;
+
+: T ( n)  DUP  6 LSHIFT  CHR !  TYPE-LINE ;
 : F  >FND FND ;
 : I'  >INS INS ;
-: I  I' TYP ;
+: I  I' TYPE-LINE ;
+: E      ( TODO ) ;
 : R  E I ;
-: P  ^LIN DUP CHR !  SCR+ 64 BLANK  UPDATE  I' ;
+: P  #LIN CHR !  'LIN 64 BLANK  UPDATE  I' ;
 
-PREVIOUS  FORTH-WORDLIST SET-CURRENT
+PREVIOUS  SET-CURRENT  ( )
