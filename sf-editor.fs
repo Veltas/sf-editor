@@ -4,23 +4,8 @@ WORDLIST CONSTANT EDITOR-WL
 GET-CURRENT  ALSO EDITOR DEFINITIONS  ( old-current-wl)
 : FORTH  FORTH ;
 
-VARIABLE CHR
-CREATE 'FND 64 ALLOT  VARIABLE #FND
-CREATE 'INS 64 ALLOT  VARIABLE #INS
-
-: -ROT ( x1 x2 x3 - x3 x1 x2)  ROT ROT ;
-: HUH ( a n)  TYPE  [CHAR] ? EMIT  ABORT ;
-: CHOOSE ( ? x1 x2 - x1|x2)  ROT IF SWAP THEN NIP ;
-
-BL WORD TIB FIND NIP 0=  BL WORD #TIB FIND NIP 0=  OR [IF]
-: TIB ( a)  SOURCE DROP ;  : #TIB@ ( n)  SOURCE NIP ;
-[ELSE]
-: #TIB@ ( - a)  #TIB @ ;
-[THEN]
-
-: N  1 SCR +! ;
-: B  -1 SCR +! ;
-: L  PAGE  SCR @ LIST ;
+CREATE CHR 0 ,  CREATE 'FND 64 ALLOT  CREATE #FND 0 ,
+                CREATE 'INS 64 ALLOT  CREATE #INS 0 ,
 
 : LINE ( n - a)  6 LSHIFT  SCR @ BLOCK + ;
 : #LIN ( - n)  CHR @ 6 RSHIFT  15 MIN ;
@@ -30,26 +15,27 @@ BL WORD TIB FIND NIP 0=  BL WORD #TIB FIND NIP 0=  OR [IF]
 : PRI ( a1 a2)  SWAP ?DO I C@ PRI' LOOP ;
 : TYPE-LINE  CR  'LIN 'CHR PRI  [CHAR] ^ EMIT
              'CHR 'LIN 64 + PRI  SPACE #LIN . ;
-: TRAIL ( - a n)  'CHR  'LIN 64 + 'CHR - ;
-: -FOUND  'FND #FND @ HUH ;
+: #TRAIL ( - n)  'LIN 64 + 'CHR - ;
+: TRAIL ( - a n)  'CHR #TRAIL ;
+: -FOUND  'FND #FND @ TYPE  ."  NONE"  ABORT ;
 : FND ( a n)  TUCK TRAIL 2SWAP SEARCH NIP
               IF 0 LINE - + CHR !  ELSE -FOUND THEN ;
-: INS    ( TODO ) ;
-: BLANK ( a n)  0 ?DO BL DUP C! 1+ LOOP DROP ;
-: END  #TIB@ >IN ! ;
-: END? ( - ?)  #TIB@ >IN @ = ;
-: >>> ( - a n ?)  TIB >IN @ +  #TIB@ >IN @ -  END? 0=  END ;
+: INS  'CHR  DUP #INS @ +  DUP 'LIN 64 + -   ( TODO ) ;
+: BLANK ( a n)  0 ?DO BL OVER C! 1+ LOOP DROP ;
+: >>> ( - a n ?)  0 PARSE DUP 0<> ;
 : >FND'  >>> IF DUP #FND ! 'FND SWAP MOVE ELSE 2DROP THEN ;
-: >INS'  >>> IF DUP #INS ! 'INS SWAP MOVE ELSE 2DROP THEN ;
-: >FND ( - a n)  >FND'  'FND #FND @  CR ;
-: >INS ( - a n)  >INS'  'INS #INS @  CR ;
+: >INS  >>> IF DUP #INS ! 'INS SWAP MOVE ELSE 2DROP THEN ;
+: >FND ( - a n)  >FND'  'FND #FND @ ;
 
-: T ( n)  DUP  6 LSHIFT  CHR !  TYPE-LINE ;
-: F  >FND FND ;
-: I'  >INS INS ;
-: I  I' TYPE-LINE ;
+: N  1 SCR +! ;
+: B  -1 SCR +! ;
+: L  PAGE  SCR @ LIST ;
+: T ( n)  6 LSHIFT CHR !  TYPE-LINE ;
+: F  >FND FND  TYPE-LINE ;
+: I  >INS INS  TYPE-LINE ;
 : E      ( TODO ) ;
+: D  >FND FND  E ;
 : R  E I ;
-: P  #LIN CHR !  'LIN 64 BLANK  UPDATE  I' ;
+: P  #LIN 6 LSHIFT CHR !  'LIN 64 BLANK  >INS INS ;
 
 PREVIOUS  SET-CURRENT  ( )
