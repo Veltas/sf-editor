@@ -3,24 +3,29 @@ WORDLIST CONSTANT EDITOR-WL
 : EDITOR  GET-ORDER NIP EDITOR-WL SWAP SET-ORDER ;
 GET-CURRENT  ALSO EDITOR DEFINITIONS  ( old-current-wl)
 : FORTH  FORTH ;
+: LIST  LIST ;
 
 CREATE CHR 0 ,  CREATE 'FND 64 ALLOT  CREATE #FND 0 ,
                 CREATE 'INS 64 ALLOT  CREATE #INS 0 ,
 
 : LINE ( n - a)  6 LSHIFT  SCR @ BLOCK + ;
+: UMIN ( u1 u2 - u3)  2DUP U< IF SWAP THEN NIP ;
 : #LIN ( - n)  CHR @ 6 RSHIFT  15 MIN ;
 : 'LIN ( - a)  #LIN LINE ;
+: 'ELIN ( - a)  'LIN 64 + ;
 : 'CHR ( - a)  CHR @  SCR @ BLOCK + ;
 : PRI' ( c)  DUP 32 127 WITHIN IF EMIT ELSE DROP SPACE THEN ;
 : PRI ( a1 a2)  SWAP ?DO I C@ PRI' LOOP ;
-: TYPE-LINE  CR  'LIN 'CHR PRI  [CHAR] ^ EMIT
-             'CHR 'LIN 64 + PRI  SPACE #LIN . ;
-: #TRAIL ( - n)  'LIN 64 + 'CHR - ;
-: TRAIL ( - a n)  'CHR #TRAIL ;
+: TYPE-LINE  CR  'LIN 'CHR PRI  [CHAR] ^ EMIT 'CHR  'ELIN PRI
+             SPACE #LIN . ;
+: TRAIL ( - a n)  'CHR  'ELIN OVER - ;
 : -FOUND  'FND #FND @ TYPE  ."  NONE"  ABORT ;
 : FND ( a n)  TUCK TRAIL 2SWAP SEARCH NIP
               IF 0 LINE - + CHR !  ELSE -FOUND THEN ;
-: INS  'CHR  DUP #INS @ +  DUP 'LIN 64 + -   ( TODO ) ;
+: BUDGE  'CHR  DUP #INS @ + 'ELIN UMIN  'ELIN OVER -  CMOVE> ;
+: TRANS  'INS  'CHR  #INS @ 'ELIN 'CHR - MIN  MOVE ;
+: INS  BUDGE  TRANS  #INS @ CHR +! ;
+
 : BLANK ( a n)  0 ?DO BL OVER C! 1+ LOOP DROP ;
 : >>> ( - a n ?)  0 PARSE DUP 0<> ;
 : >FND'  >>> IF DUP #FND ! 'FND SWAP MOVE ELSE 2DROP THEN ;
